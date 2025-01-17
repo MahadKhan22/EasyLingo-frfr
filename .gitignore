@@ -27,3 +27,6 @@ node_modules
 
 **/tempobook/dynamic/
 **/tempobook/storyboards/
+
+# api key
+API_key.env

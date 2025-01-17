@@ -1,13 +1,10 @@
-const GOOGLE_TRANSLATE_API_KEY = import.meta.env.VITE_GOOGLE_TRANSLATE_API_KEY;
-const GOOGLE_TRANSLATE_API_URL =
-  "https://translation.googleapis.com/language/translate/v2";
+const DEEPL_API_KEY = import.meta.env.VITE_DEEPL_API_KEY;
+const DEEPL_API_URL = "https://api-free.deepl.com/v2/translate";  // Use api.deepl.com for pro accounts
 
 export interface TranslationResponse {
-  data: {
-    translations: Array<{
-      translatedText: string;
-    }>;
-  };
+  translations: Array<{
+    text: string;
+  }>;
 }
 
 export class TranslationError extends Error {
@@ -22,7 +19,6 @@ export class TranslationError extends Error {
 
 export const translateText = async (text: string): Promise<string> => {
   try {
-    // Check network connectivity
     if (!navigator.onLine) {
       throw new TranslationError(
         "No internet connection. Please check your network.",
@@ -30,21 +26,18 @@ export const translateText = async (text: string): Promise<string> => {
       );
     }
 
-    const response = await fetch(
-      `${GOOGLE_TRANSLATE_API_URL}?key=${GOOGLE_TRANSLATE_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          q: text,
-          source: "en",
-          target: "fr",
-          format: "text",
-        }),
+    const response = await fetch(DEEPL_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `DeepL-Auth-Key ${DEEPL_API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        text: [text],
+        source_lang: "EN",
+        target_lang: "FR",
+      }),
+    });
 
     if (!response.ok) {
       throw new TranslationError(
@@ -55,20 +48,19 @@ export const translateText = async (text: string): Promise<string> => {
 
     const data: TranslationResponse = await response.json();
 
-    if (!data.data?.translations?.[0]?.translatedText) {
+    if (!data.translations?.[0]?.text) {
       throw new TranslationError(
         "Unable to translate the provided text.",
         "translation",
       );
     }
 
-    return data.data.translations[0].translatedText;
+    return data.translations[0].text;
   } catch (error) {
     if (error instanceof TranslationError) {
       throw error;
     }
 
-    // Handle unexpected errors
     throw new TranslationError(
       "An unexpected error occurred during translation.",
       "api",
