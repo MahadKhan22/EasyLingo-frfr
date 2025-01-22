@@ -1,5 +1,7 @@
 const DEEPL_API_KEY = import.meta.env.VITE_DEEPL_API_KEY;
 const DEEPL_API_URL = "https://api-free.deepl.com/v2/translate";  // Use api.deepl.com for pro accounts
+console.log(DEEPL_API_KEY);
+console.log(DEEPL_API_URL);
 
 export interface TranslationResponse {
   translations: Array<{
